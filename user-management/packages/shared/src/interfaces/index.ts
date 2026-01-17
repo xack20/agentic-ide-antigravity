@@ -5,3 +5,5 @@ export * from './validator.interface';
 export * from './pagination.interface';
 export * from './search.interface';
 export * from './role-repository.interface';
+export * from './email-service.interface';
+export * from './email-config.interface';

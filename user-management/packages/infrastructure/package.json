@@ -10,10 +10,12 @@
     "dependencies": {
         "@user-management/shared": "1.0.0",
         "mongoose": "^8.0.3",
+        "nodemailer": "^7.0.12",
         "tsyringe": "^4.8.0"
     },
     "devDependencies": {
         "@types/node": "^20.10.5",
+        "@types/nodemailer": "^7.0.5",
         "typescript": "^5.3.3"
     }
 }

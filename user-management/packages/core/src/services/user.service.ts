@@ -4,6 +4,7 @@ import {
     IUserService,
     IUserRepository,
     IValidator,
+    IEmailService,
     CreateUserDto,
     UpdateUserDto,
     UserResponseDto,
@@ -28,7 +29,8 @@ export class UserService implements IUserService {
         @inject('IUserRepository') private readonly userRepository: IUserRepository,
         @inject('EmailUniquenessValidator') private readonly emailValidator: IValidator<string>,
         @inject('PhoneUniquenessValidator') private readonly phoneValidator: IValidator<string | undefined>,
-        @inject('SoftDeleteBlockValidator') private readonly softDeleteValidator: IValidator<SoftDeleteCheckInput>
+        @inject('SoftDeleteBlockValidator') private readonly softDeleteValidator: IValidator<SoftDeleteCheckInput>,
+        @inject('IEmailService') private readonly emailService: IEmailService
     ) { }
 
     /**
@@ -58,6 +60,9 @@ export class UserService implements IUserService {
             isDeleted: false,
         });
 
+        // Send welcome email (non-blocking - don't fail registration if email fails)
+        this.sendWelcomeEmailAsync(user.email, user.firstName);
+
         return this.toResponseDto(user);
     }
 
@@ -79,6 +84,18 @@ export class UserService implements IUserService {
         if (!softDeleteResult.isValid) {
             throw new ConflictError(softDeleteResult.errors[0].message);
         }
+    }
+
+    /**
+     * Send welcome email asynchronously (non-blocking)
+     */
+    private sendWelcomeEmailAsync(email: string, firstName: string): void {
+        this.emailService.sendWelcomeEmail(email, firstName).catch((error) => {
+            console.error('[UserService] Failed to send welcome email:', {
+                email,
+                error: error instanceof Error ? error.message : error,
+            });
+        });
     }
 
     /**

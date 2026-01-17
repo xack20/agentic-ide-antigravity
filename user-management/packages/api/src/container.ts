@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 import { container } from 'tsyringe';
-import { IUserRepository, IUserService, IValidator, IRoleRepository } from '@user-management/shared';
-import { UserRepository, RoleRepository } from '@user-management/infrastructure';
+import { IUserRepository, IUserService, IValidator, IRoleRepository, IEmailService, IEmailConfig } from '@user-management/shared';
+import { UserRepository, RoleRepository, EmailService, loadEmailConfig } from '@user-management/infrastructure';
 import {
     UserService,
     RoleService,
@@ -15,6 +15,12 @@ import {
  * Configure dependency injection container
  */
 export function configureContainer(): void {
+    // Register email config
+    const emailConfig = loadEmailConfig();
+    container.register<IEmailConfig>('IEmailConfig', {
+        useValue: emailConfig,
+    });
+
     // Register repositories
     container.register<IUserRepository>('IUserRepository', {
         useClass: UserRepository,
@@ -35,6 +41,11 @@ export function configureContainer(): void {
 
     container.register<IValidator<SoftDeleteCheckInput>>('SoftDeleteBlockValidator', {
         useClass: SoftDeleteBlockValidator,
+    });
+
+    // Register email service
+    container.register<IEmailService>('IEmailService', {
+        useClass: EmailService,
     });
 
     // Register services
