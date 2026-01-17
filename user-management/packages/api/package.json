@@ -1,0 +1,26 @@
+{
+    "name": "@user-management/api",
+    "version": "1.0.0",
+    "main": "dist/index.js",
+    "scripts": {
+        "build": "tsc",
+        "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
+        "start": "node dist/index.js"
+    },
+    "dependencies": {
+        "@user-management/shared": "1.0.0",
+        "@user-management/infrastructure": "1.0.0",
+        "@user-management/core": "1.0.0",
+        "express": "^4.18.2",
+        "zod": "^3.22.4",
+        "tsyringe": "^4.8.0",
+        "reflect-metadata": "^0.2.1",
+        "dotenv": "^16.3.1"
+    },
+    "devDependencies": {
+        "@types/express": "^4.17.21",
+        "@types/node": "^20.10.5",
+        "ts-node-dev": "^2.0.0",
+        "typescript": "^5.3.3"
+    }
+}

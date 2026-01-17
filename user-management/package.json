@@ -1,0 +1,19 @@
+{
+  "name": "user-management",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build:shared": "npm run build --workspace=@user-management/shared",
+    "build:infrastructure": "npm run build --workspace=@user-management/infrastructure",
+    "build:core": "npm run build --workspace=@user-management/core",
+    "build:api": "npm run build --workspace=@user-management/api",
+    "build": "npm run build:shared && npm run build:infrastructure && npm run build:core && npm run build:api",
+    "dev": "npm run dev --workspace=@user-management/api"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3"
+  }
+}

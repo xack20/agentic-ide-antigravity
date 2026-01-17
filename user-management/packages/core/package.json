@@ -1,0 +1,20 @@
+{
+    "name": "@user-management/core",
+    "version": "1.0.0",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "scripts": {
+        "build": "tsc",
+        "dev": "tsc --watch"
+    },
+    "dependencies": {
+        "@user-management/shared": "1.0.0",
+        "bcrypt": "^5.1.1",
+        "tsyringe": "^4.8.0"
+    },
+    "devDependencies": {
+        "@types/bcrypt": "^5.0.2",
+        "@types/node": "^20.10.5",
+        "typescript": "^5.3.3"
+    }
+}
