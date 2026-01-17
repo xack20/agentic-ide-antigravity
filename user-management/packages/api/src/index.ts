@@ -12,7 +12,11 @@ dotenv.config();
 configureContainer();
 
 // Now import routes after container is configured
-import { userRoutes } from './routes';
+import { userRoutes, roleRoutes } from './routes';
+
+// Import role service for seeding
+import { container } from 'tsyringe';
+import { RoleService } from '@user-management/core';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -23,6 +27,7 @@ app.use(express.json());
 
 // Routes
 app.use('/api/users', userRoutes);
+app.use('/api/roles', roleRoutes);
 
 // Health check
 app.get('/health', (req, res) => {
@@ -37,6 +42,10 @@ async function start() {
     try {
         // Connect to MongoDB
         await database.connect(MONGO_URI);
+
+        // Seed default roles
+        const roleService = container.resolve<RoleService>('RoleService');
+        await roleService.seedDefaultRoles();
 
         app.listen(PORT, () => {
             console.log(`Server running on http://localhost:${PORT}`);

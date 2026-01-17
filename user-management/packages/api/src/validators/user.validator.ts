@@ -68,9 +68,7 @@ export const registerUserSchema = z.object({
             { message: 'You must be at least 13 years old to register' }
         ),
 }).superRefine((data, ctx) => {
-    // Cross-field password validation
     const passwordErrors = validatePassword(data.password, data.email, data.phoneNumber);
-
     for (const error of passwordErrors) {
         ctx.addIssue({
             code: z.ZodIssueCode.custom,
@@ -84,7 +82,6 @@ export type RegisterUserInput = z.infer<typeof registerUserSchema>;
 
 /**
  * Zod schema for user update request
- * All fields are optional, but if provided must meet same validation rules
  */
 export const updateUserSchema = z.object({
     firstName: z
@@ -144,3 +141,51 @@ export const updateUserSchema = z.object({
 });
 
 export type UpdateUserInput = z.infer<typeof updateUserSchema>;
+
+/**
+ * Zod schema for pagination query parameters
+ */
+export const paginationSchema = z.object({
+    page: z.coerce.number().int().min(1).default(1),
+    limit: z.coerce.number().int().min(1).max(100).default(10),
+    sortBy: z.string().default('createdAt'),
+    sortOrder: z.enum(['asc', 'desc']).default('desc'),
+});
+
+/**
+ * Zod schema for get all users query
+ */
+export const getAllUsersSchema = paginationSchema.extend({
+    includeDeleted: z.coerce.boolean().default(false),
+});
+
+export type GetAllUsersQuery = z.infer<typeof getAllUsersSchema>;
+
+/**
+ * Zod schema for user search query
+ */
+export const searchUsersSchema = paginationSchema.extend({
+    q: z.string().optional(),
+    email: z.string().optional(),
+    phone: z.string().optional(),
+    isActive: z.coerce.boolean().optional(),
+});
+
+export type SearchUsersQuery = z.infer<typeof searchUsersSchema>;
+
+/**
+ * Zod schema for change password request
+ */
+export const changePasswordSchema = z.object({
+    currentPassword: z.string().min(1, 'Current password is required'),
+    newPassword: z.string().min(10, 'Password must be at least 10 characters'),
+    confirmPassword: z.string().min(1, 'Confirm password is required'),
+}).refine((data) => data.newPassword === data.confirmPassword, {
+    message: 'Passwords do not match',
+    path: ['confirmPassword'],
+}).refine((data) => data.newPassword !== data.currentPassword, {
+    message: 'New password must be different from current password',
+    path: ['newPassword'],
+});
+
+export type ChangePasswordInput = z.infer<typeof changePasswordSchema>;

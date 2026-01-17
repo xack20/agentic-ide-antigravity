@@ -1,9 +1,10 @@
 import 'reflect-metadata';
 import { container } from 'tsyringe';
-import { IUserRepository, IUserService, IValidator } from '@user-management/shared';
-import { UserRepository } from '@user-management/infrastructure';
+import { IUserRepository, IUserService, IValidator, IRoleRepository } from '@user-management/shared';
+import { UserRepository, RoleRepository } from '@user-management/infrastructure';
 import {
     UserService,
+    RoleService,
     EmailUniquenessValidator,
     PhoneUniquenessValidator,
     SoftDeleteBlockValidator,
@@ -14,9 +15,13 @@ import {
  * Configure dependency injection container
  */
 export function configureContainer(): void {
-    // Register repository
+    // Register repositories
     container.register<IUserRepository>('IUserRepository', {
         useClass: UserRepository,
+    });
+
+    container.register<IRoleRepository>('IRoleRepository', {
+        useClass: RoleRepository,
     });
 
     // Register validators
@@ -32,8 +37,12 @@ export function configureContainer(): void {
         useClass: SoftDeleteBlockValidator,
     });
 
-    // Register service
+    // Register services
     container.register<IUserService>('IUserService', {
         useClass: UserService,
+    });
+
+    container.register<RoleService>('RoleService', {
+        useClass: RoleService,
     });
 }

@@ -52,6 +52,13 @@ const userSchema = new Schema<UserDocument>(
             type: Boolean,
             default: false,
         },
+        deletedAt: {
+            type: Date,
+        },
+        roles: [{
+            type: Schema.Types.ObjectId,
+            ref: 'Role',
+        }],
     },
     {
         timestamps: true,

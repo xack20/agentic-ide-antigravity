@@ -20,6 +20,8 @@ export interface User extends BaseEntity {
     dateOfBirth?: Date;
     isActive: boolean;
     isDeleted: boolean;
+    deletedAt?: Date;
+    roles?: string[]; // Role IDs
 }
 
 /**

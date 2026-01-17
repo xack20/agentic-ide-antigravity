@@ -1,5 +1,11 @@
 import { injectable } from 'tsyringe';
-import { IUserRepository, User } from '@user-management/shared';
+import {
+    IUserRepository,
+    User,
+    IPaginatedResult,
+    IPaginationOptions,
+    IUserSearchCriteria
+} from '@user-management/shared';
 import { UserModel, UserDocument } from '../entities/user.entity';
 
 /**
@@ -22,6 +28,7 @@ export class UserRepository implements IUserRepository {
             dateOfBirth: doc.dateOfBirth,
             isActive: doc.isActive,
             isDeleted: doc.isDeleted,
+            deletedAt: doc.deletedAt,
             createdAt: doc.createdAt,
             updatedAt: doc.updatedAt,
         };
@@ -103,8 +110,108 @@ export class UserRepository implements IUserRepository {
     }
 
     async delete(id: string): Promise<boolean> {
-        // Soft delete
-        const result = await UserModel.findByIdAndUpdate(id, { isDeleted: true });
+        // Soft delete with deletedAt timestamp
+        const result = await UserModel.findByIdAndUpdate(id, {
+            isDeleted: true,
+            deletedAt: new Date()
+        });
         return result !== null;
+    }
+
+    async softDelete(id: string): Promise<boolean> {
+        const doc = await UserModel.findById(id);
+        if (!doc || doc.isDeleted) {
+            return false;
+        }
+        await UserModel.findByIdAndUpdate(id, {
+            isDeleted: true,
+            deletedAt: new Date()
+        });
+        return true;
+    }
+
+    async restore(id: string): Promise<User | null> {
+        const doc = await UserModel.findById(id);
+        if (!doc || !doc.isDeleted) {
+            return null;
+        }
+        const updated = await UserModel.findByIdAndUpdate(
+            id,
+            { isDeleted: false, deletedAt: null },
+            { new: true }
+        );
+        return updated ? this.toEntity(updated) : null;
+    }
+
+    async updatePassword(id: string, passwordHash: string): Promise<boolean> {
+        const result = await UserModel.findByIdAndUpdate(id, { passwordHash });
+        return result !== null;
+    }
+
+    async findAllPaginated(
+        filter: Partial<User>,
+        options: IPaginationOptions
+    ): Promise<IPaginatedResult<User>> {
+        const { page, limit, sortBy = 'createdAt', sortOrder = 'desc' } = options;
+        const skip = (page - 1) * limit;
+
+        const sortDirection = sortOrder === 'asc' ? 1 : -1;
+
+        const [docs, totalItems] = await Promise.all([
+            UserModel.find(filter)
+                .sort({ [sortBy]: sortDirection })
+                .skip(skip)
+                .limit(limit),
+            UserModel.countDocuments(filter),
+        ]);
+
+        const totalPages = Math.ceil(totalItems / limit);
+
+        return {
+            data: docs.map((doc) => this.toEntity(doc)),
+            pagination: {
+                page,
+                limit,
+                totalItems,
+                totalPages,
+                hasNextPage: page < totalPages,
+                hasPrevPage: page > 1,
+            },
+        };
+    }
+
+    async search(
+        criteria: IUserSearchCriteria,
+        options: IPaginationOptions
+    ): Promise<IPaginatedResult<User>> {
+        const filter: any = { isDeleted: false };
+
+        // General search term (name or email)
+        if (criteria.q) {
+            const searchRegex = new RegExp(criteria.q, 'i');
+            filter.$or = [
+                { firstName: searchRegex },
+                { lastName: searchRegex },
+                { email: searchRegex },
+                { displayName: searchRegex },
+            ];
+        }
+
+        // Partial email match
+        if (criteria.email) {
+            filter.email = new RegExp(criteria.email, 'i');
+        }
+
+        // Partial phone match
+        if (criteria.phone) {
+            filter.phoneNumber = new RegExp(criteria.phone, 'i');
+        }
+
+        // Filter by active status
+        if (criteria.isActive !== undefined) {
+            filter.isActive = criteria.isActive;
+        }
+
+        return this.findAllPaginated(filter, options);
     }
 }
