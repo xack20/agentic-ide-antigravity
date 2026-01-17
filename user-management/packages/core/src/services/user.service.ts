@@ -3,11 +3,12 @@ import bcrypt from 'bcrypt';
 import {
     IUserService,
     IUserRepository,
+    IValidator,
     CreateUserDto,
     UserResponseDto,
     ConflictError,
-    ValidationError,
 } from '@user-management/shared';
+import { SoftDeleteCheckInput } from '../validators/soft-delete-block.validator';
 
 /**
  * User service implementing business logic
@@ -17,7 +18,10 @@ export class UserService implements IUserService {
     private readonly SALT_ROUNDS = 10;
 
     constructor(
-        @inject('IUserRepository') private readonly userRepository: IUserRepository
+        @inject('IUserRepository') private readonly userRepository: IUserRepository,
+        @inject('EmailUniquenessValidator') private readonly emailValidator: IValidator<string>,
+        @inject('PhoneUniquenessValidator') private readonly phoneValidator: IValidator<string | undefined>,
+        @inject('SoftDeleteBlockValidator') private readonly softDeleteValidator: IValidator<SoftDeleteCheckInput>
     ) { }
 
     /**
@@ -26,34 +30,8 @@ export class UserService implements IUserService {
     async register(data: CreateUserDto): Promise<UserResponseDto> {
         const normalizedEmail = data.email.toLowerCase().trim();
 
-        // Check if email exists (active user)
-        const emailExists = await this.userRepository.existsByEmail(normalizedEmail);
-        if (emailExists) {
-            throw new ConflictError('Email already registered');
-        }
-
-        // Check if soft-deleted account exists with this email
-        const deletedEmailExists = await this.userRepository.existsDeletedByEmail(normalizedEmail);
-        if (deletedEmailExists) {
-            throw new ConflictError(
-                'An account with this email was previously deleted. Please contact an admin to restore it.'
-            );
-        }
-
-        // Phone number uniqueness checks (if provided)
-        if (data.phoneNumber) {
-            const phoneExists = await this.userRepository.existsByPhone(data.phoneNumber);
-            if (phoneExists) {
-                throw new ConflictError('Phone number already registered');
-            }
-
-            const deletedPhoneExists = await this.userRepository.existsDeletedByPhone(data.phoneNumber);
-            if (deletedPhoneExists) {
-                throw new ConflictError(
-                    'An account with this phone number was previously deleted. Please contact an admin to restore it.'
-                );
-            }
-        }
+        // Run validators
+        await this.runValidators(normalizedEmail, data.phoneNumber);
 
         // Hash password using bcrypt
         const passwordHash = await bcrypt.hash(data.password, this.SALT_ROUNDS);
@@ -78,6 +56,29 @@ export class UserService implements IUserService {
         });
 
         return this.toResponseDto(user);
+    }
+
+    /**
+     * Run all validators for registration
+     */
+    private async runValidators(email: string, phoneNumber?: string): Promise<void> {
+        // Check email uniqueness
+        const emailResult = await this.emailValidator.validate(email);
+        if (!emailResult.isValid) {
+            throw new ConflictError(emailResult.errors[0].message);
+        }
+
+        // Check phone uniqueness (if provided)
+        const phoneResult = await this.phoneValidator.validate(phoneNumber);
+        if (!phoneResult.isValid) {
+            throw new ConflictError(phoneResult.errors[0].message);
+        }
+
+        // Check soft-deleted accounts
+        const softDeleteResult = await this.softDeleteValidator.validate({ email, phoneNumber });
+        if (!softDeleteResult.isValid) {
+            throw new ConflictError(softDeleteResult.errors[0].message);
+        }
     }
 
     /**
