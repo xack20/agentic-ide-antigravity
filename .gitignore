@@ -1,31 +1,75 @@
-# Dependency directories
-node_modules/
+# Compiled class files
+*.class
 
-# Build outputs
-dist/
+# Log files
+*.log
+logs/
+*.tmp
+
+# Package Files
+*.jar
+*.war
+*.ear
+*.zip
+*.tar.gz
+
+# Maven
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar # Keep the wrapper jar, but ignore other generated files
+
+# Gradle
+.gradle/
 build/
-*.tsbuildinfo
+.project
+.settings/
+.classpath
 
-# Environment variables
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-!.env.example
-
-# Logs
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-lerna-debug.log*
-
-# IDE/Editor
-.vscode/
+# IntelliJ IDEA
 .idea/
-*.swp
-*.swo
+*.iml
+*.ipr
+*.iws
+out/
 
-# OS files
+# Eclipse
+.metadata
+.apt_generated
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+.buildpath
+.recommenders/
+*.launch
+
+# VS Code
+.vscode/
+
+# OS-specific files
 .DS_Store
 Thumbs.db
+
+# Specific to Spring Boot
+/src/main/resources/static/
+/src/main/resources/public/
+
+# Sensitive configuration files (handle with care, consider environment variables for secrets)
+# application.properties
+# application.yml
+# application-*.properties
+# application-*.yml
+
+# Others
+*.bak
+*.swp
+*~.nib
+local.properties
