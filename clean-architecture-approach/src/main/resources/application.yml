@@ -1,0 +1,64 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: user-management
+  data:
+    mongodb:
+      uri: ${MONGODB_URI:mongodb://localhost:27017/user_management}
+      auto-index-creation: true
+
+# JWT Configuration
+jwt:
+  secret: ${JWT_SECRET:your-256-bit-secret-key-here-replace-in-production}
+  access-token-validity: 15m
+  refresh-token-validity: 7d
+  issuer: user-management
+
+# Policy Configuration
+policy:
+  password:
+    min-length: 12
+    min-categories: 3
+    history-count: 5
+    check-breached-list: false
+  email:
+    blocked-domains:
+      - tempmail.com
+      - throwaway.com
+      - guerrillamail.com
+      - mailinator.com
+    normalize-gmail: true
+    check-mx-record: false
+  phone:
+    default-country: BD
+  name:
+    min-length: 2
+    max-length: 80
+  rate-limit:
+    registration:
+      limit: 5
+      window: 15m
+    login:
+      attempts: 5
+      lockout-duration: 30m
+    profile-update:
+      limit: 10
+      window: 24h
+    admin-search:
+      limit: 100
+      window: 1m
+
+# Logging
+logging:
+  level:
+    com.usermanagement: DEBUG
+    org.springframework.security: DEBUG
+
+# Actuator
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
