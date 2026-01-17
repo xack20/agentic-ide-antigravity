@@ -49,3 +49,15 @@ export interface UserResponseDto {
     isActive: boolean;
     createdAt: Date;
 }
+
+/**
+ * DTO for updating a user (excludes email, password, isDeleted)
+ */
+export interface UpdateUserDto {
+    firstName?: string;
+    lastName?: string;
+    displayName?: string;
+    phoneNumber?: string;
+    dateOfBirth?: string; // ISO date string from API
+    isActive?: boolean;
+}

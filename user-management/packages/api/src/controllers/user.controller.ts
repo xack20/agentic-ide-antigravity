@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { inject, injectable } from 'tsyringe';
-import { IUserService, CreateUserDto } from '@user-management/shared';
+import { IUserService, CreateUserDto, UpdateUserDto } from '@user-management/shared';
 
 /**
  * User controller handling HTTP requests
@@ -37,6 +37,20 @@ export class UserController {
                 return;
             }
 
+            res.json(user);
+        } catch (error) {
+            next(error);
+        }
+    };
+
+    /**
+     * PUT /api/users/:id
+     */
+    update = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const { id } = req.params;
+            const updateUserDto: UpdateUserDto = req.body;
+            const user = await this.userService.update(id, updateUserDto);
             res.json(user);
         } catch (error) {
             next(error);

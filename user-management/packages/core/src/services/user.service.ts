@@ -5,8 +5,10 @@ import {
     IUserRepository,
     IValidator,
     CreateUserDto,
+    UpdateUserDto,
     UserResponseDto,
     ConflictError,
+    NotFoundError,
 } from '@user-management/shared';
 import { SoftDeleteCheckInput } from '../validators/soft-delete-block.validator';
 
@@ -101,6 +103,63 @@ export class UserService implements IUserService {
             return null;
         }
         return this.toResponseDto(user);
+    }
+
+    /**
+     * Update user profile
+     * Cannot update: email, password, isDeleted
+     */
+    async update(id: string, data: UpdateUserDto): Promise<UserResponseDto> {
+        // Find existing user
+        const existingUser = await this.userRepository.findById(id);
+        if (!existingUser || existingUser.isDeleted) {
+            throw new NotFoundError('User', id);
+        }
+
+        // If phone number is being changed, validate uniqueness
+        if (data.phoneNumber !== undefined && data.phoneNumber !== existingUser.phoneNumber) {
+            const phoneResult = await this.phoneValidator.validate(data.phoneNumber);
+            if (!phoneResult.isValid) {
+                throw new ConflictError(phoneResult.errors[0].message);
+            }
+        }
+
+        // Build update object (only include provided fields)
+        const updateData: Partial<{
+            firstName: string;
+            lastName: string;
+            displayName?: string;
+            phoneNumber?: string;
+            dateOfBirth?: Date;
+            isActive: boolean;
+        }> = {};
+
+        if (data.firstName !== undefined) {
+            updateData.firstName = data.firstName.trim();
+        }
+        if (data.lastName !== undefined) {
+            updateData.lastName = data.lastName.trim();
+        }
+        if (data.displayName !== undefined) {
+            updateData.displayName = data.displayName?.trim() || undefined;
+        }
+        if (data.phoneNumber !== undefined) {
+            updateData.phoneNumber = data.phoneNumber || undefined;
+        }
+        if (data.dateOfBirth !== undefined) {
+            updateData.dateOfBirth = data.dateOfBirth ? new Date(data.dateOfBirth) : undefined;
+        }
+        if (data.isActive !== undefined) {
+            updateData.isActive = data.isActive;
+        }
+
+        // Update user
+        const updatedUser = await this.userRepository.update(id, updateData);
+        if (!updatedUser) {
+            throw new NotFoundError('User', id);
+        }
+
+        return this.toResponseDto(updatedUser);
     }
 
     /**
