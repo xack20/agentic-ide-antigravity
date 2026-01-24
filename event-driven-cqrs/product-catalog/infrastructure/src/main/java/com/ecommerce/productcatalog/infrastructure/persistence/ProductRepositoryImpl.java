@@ -93,7 +93,12 @@ public class ProductRepositoryImpl implements ProductRepository {
         doc.setCurrency(aggregate.getPrice().getCurrencyCode());
         doc.setSku(aggregate.getSku());
         doc.setStatus(aggregate.getStatus().name());
-        doc.setVersion(aggregate.getVersion());
+        // For new aggregates (version 0), leave document version as null
+        // Spring Data MongoDB treats null version as an insert, non-null as update
+        if (aggregate.getVersion() > 0) {
+            doc.setVersion(aggregate.getVersion());
+        }
+        // version stays null for new documents, enabling proper insert behavior
         return doc;
     }
 }

@@ -75,7 +75,13 @@ public class ProductCommandConsumer {
                     commandNode.get("currency").asText(),
                     commandNode.get("sku").asText());
 
+            logger.info("Executing CreateProductCommand: name={}, sku={}, price={}, currency={}",
+                    createCmd.getName(), createCmd.getSku(), createCmd.getPrice(), createCmd.getCurrency());
+
             var result = createProductCommandHandler.handle(createCmd).join();
+
+            logger.info("Handler returned result: success={}, productId={}, error={}",
+                    result.isSuccess(), result.getProductId(), result.getErrorMessage());
 
             if (result.isSuccess()) {
                 markAsProcessed(commandId, "CreateProductCommand", result.getProductId());

@@ -66,16 +66,20 @@ public class CreateProductCommandHandler implements CommandHandler<CreateProduct
                     price,
                     command.getSku());
 
-            // Save aggregate (writes state + outbox)
+            // Capture uncommitted events BEFORE save (repository reconstitutes without
+            // events)
+            var eventsToPublish = product.getUncommittedEvents();
+            String createdProductId = product.getId().getValue();
+
+            // Save aggregate (writes state to DB)
             return productRepository.save(product)
                     .thenCompose(savedProduct -> {
-                        // Publish events
-                        return eventPublisher.publishAll(savedProduct.getUncommittedEvents())
+                        // Publish events from the original aggregate
+                        return eventPublisher.publishAll(eventsToPublish)
                                 .thenApply(v -> {
-                                    savedProduct.clearUncommittedEvents();
                                     logger.info("Product created successfully: productId={}",
-                                            savedProduct.getId().getValue());
-                                    return CreateProductResult.success(savedProduct.getId().getValue());
+                                            createdProductId);
+                                    return CreateProductResult.success(createdProductId);
                                 });
                     });
         } catch (IllegalArgumentException ex) {

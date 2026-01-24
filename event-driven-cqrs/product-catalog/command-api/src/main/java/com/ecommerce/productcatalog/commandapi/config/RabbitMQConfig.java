@@ -41,7 +41,6 @@ public class RabbitMQConfig {
     public Queue productCatalogCommandsQueue() {
         return QueueBuilder.durable(MessagingConstants.PRODUCT_CATALOG_COMMANDS_QUEUE)
                 .withArgument("x-dead-letter-exchange", MessagingConstants.DEAD_LETTER_EXCHANGE)
-                .withArgument("x-dead-letter-routing-key", MessagingConstants.DEAD_LETTER_QUEUE)
                 .build();
     }
 
