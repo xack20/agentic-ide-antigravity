@@ -16,11 +16,13 @@ public class CommandEnvelope<T extends Command<?>> {
     private final String causationId;
     private final String userId;
     private final String tenantId;
+    private final String commandType;
     private final Instant timestamp;
 
     public CommandEnvelope(T command, String correlationId, String causationId,
             String userId, String tenantId) {
         this.command = command;
+        this.commandType = command.getClass().getSimpleName();
         this.correlationId = correlationId != null ? correlationId : UUID.randomUUID().toString();
         this.causationId = causationId;
         this.userId = userId;
@@ -58,6 +60,10 @@ public class CommandEnvelope<T extends Command<?>> {
 
     public Instant getTimestamp() {
         return timestamp;
+    }
+
+    public String getCommandType() {
+        return commandType;
     }
 
     public static class Builder<T extends Command<?>> {

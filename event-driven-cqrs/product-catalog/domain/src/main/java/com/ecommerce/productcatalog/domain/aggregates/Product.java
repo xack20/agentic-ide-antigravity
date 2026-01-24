@@ -5,6 +5,10 @@ import com.ecommerce.productcatalog.domain.exceptions.InvalidProductStateExcepti
 import com.ecommerce.productcatalog.domain.valueobjects.*;
 import com.ecommerce.shared.common.domain.AggregateRoot;
 
+import java.math.BigDecimal;
+
+import java.math.BigDecimal;
+
 /**
  * Product aggregate root.
  * Encapsulates all product-related business logic and invariants.
@@ -13,11 +17,12 @@ public class Product extends AggregateRoot<ProductId> {
 
     private ProductId id;
     private ProductName name;
-    private String description;
+    private ProductDescription description;
     private Money price;
-    private String sku;
+    private Sku sku;
     private ProductStatus status;
     private int version;
+    private boolean isNew = false;
 
     // Private constructor for controlled creation
     private Product() {
@@ -26,8 +31,8 @@ public class Product extends AggregateRoot<ProductId> {
     /**
      * Factory method to create a new product.
      */
-    public static Product create(ProductId id, ProductName name, String description,
-            Money price, String sku) {
+    public static Product create(ProductId id, ProductName name, ProductDescription description,
+            Money price, Sku sku) {
         Product product = new Product();
         product.id = id;
         product.name = name;
@@ -36,15 +41,16 @@ public class Product extends AggregateRoot<ProductId> {
         product.sku = sku;
         product.status = ProductStatus.DRAFT;
         product.version = 0;
+        product.isNew = true;
 
         // Raise creation event
         product.raiseEvent(new ProductCreated(
                 id.getValue(),
                 name.getValue(),
-                description,
+                description.getValue(),
                 price.getAmount(),
                 price.getCurrencyCode(),
-                sku,
+                sku.getValue(),
                 ProductStatus.DRAFT.name()));
 
         return product;
@@ -59,28 +65,43 @@ public class Product extends AggregateRoot<ProductId> {
         Product product = new Product();
         product.id = id;
         product.name = name;
-        product.description = description;
+        product.description = ProductDescription.of(description);
         product.price = price;
-        product.sku = sku;
+        product.sku = Sku.of(sku);
         product.status = status;
         product.version = version;
         return product;
     }
 
     /**
-     * Update product details.
+     * Update product details (Name and Description).
      */
-    public void update(ProductName newName, String newDescription, Money newPrice) {
-        validateNotDeleted("update");
+    public void updateDetails(ProductName newName, ProductDescription newDescription) {
+        validateNotDeleted("update details");
 
         this.name = newName;
         this.description = newDescription;
-        this.price = newPrice;
 
-        raiseEvent(new ProductUpdated(
+        raiseEvent(new ProductDetailsUpdated(
                 id.getValue(),
                 newName.getValue(),
-                newDescription,
+                newDescription.getValue()));
+    }
+
+    /**
+     * Change product price.
+     */
+    public void changePrice(Money newPrice) {
+        validateNotDeleted("change price");
+
+        // Validate price logic (e.g. non-negative is handled by Money VO)
+
+        BigDecimal oldAmount = this.price.getAmount();
+        this.price = newPrice;
+
+        raiseEvent(new ProductPriceChanged(
+                id.getValue(),
+                oldAmount,
                 newPrice.getAmount(),
                 newPrice.getCurrencyCode()));
     }
@@ -132,6 +153,10 @@ public class Product extends AggregateRoot<ProductId> {
         return status == ProductStatus.ACTIVE;
     }
 
+    public boolean isNew() {
+        return isNew;
+    }
+
     private void validateNotDeleted(String action) {
         if (status == ProductStatus.DELETED) {
             throw new InvalidProductStateException(id.getValue(), status.name(), action);
@@ -159,7 +184,7 @@ public class Product extends AggregateRoot<ProductId> {
     }
 
     public String getDescription() {
-        return description;
+        return description.getValue();
     }
 
     public Money getPrice() {
@@ -167,7 +192,7 @@ public class Product extends AggregateRoot<ProductId> {
     }
 
     public String getSku() {
-        return sku;
+        return sku.getValue();
     }
 
     public ProductStatus getStatus() {

@@ -71,4 +71,36 @@ public class CommandHandlerConfig {
             EventPublisher eventPublisher) {
         return new CreateProductCommandHandler(productRepository, eventPublisher);
     }
+
+    @Bean
+    public com.ecommerce.productcatalog.application.handlers.UpdateProductDetailsCommandHandler updateProductDetailsCommandHandler(
+            ProductRepository productRepository,
+            EventPublisher eventPublisher) {
+        return new com.ecommerce.productcatalog.application.handlers.UpdateProductDetailsCommandHandler(
+                productRepository, eventPublisher);
+    }
+
+    @Bean
+    public com.ecommerce.productcatalog.application.handlers.ChangeProductPriceCommandHandler changeProductPriceCommandHandler(
+            ProductRepository productRepository,
+            EventPublisher eventPublisher) {
+        return new com.ecommerce.productcatalog.application.handlers.ChangeProductPriceCommandHandler(productRepository,
+                eventPublisher);
+    }
+
+    @Bean
+    public com.ecommerce.productcatalog.application.handlers.ActivateProductCommandHandler activateProductCommandHandler(
+            ProductRepository productRepository,
+            EventPublisher eventPublisher) {
+        return new com.ecommerce.productcatalog.application.handlers.ActivateProductCommandHandler(productRepository,
+                eventPublisher);
+    }
+
+    @Bean
+    public com.ecommerce.productcatalog.application.handlers.DeactivateProductCommandHandler deactivateProductCommandHandler(
+            ProductRepository productRepository,
+            EventPublisher eventPublisher) {
+        return new com.ecommerce.productcatalog.application.handlers.DeactivateProductCommandHandler(productRepository,
+                eventPublisher);
+    }
 }

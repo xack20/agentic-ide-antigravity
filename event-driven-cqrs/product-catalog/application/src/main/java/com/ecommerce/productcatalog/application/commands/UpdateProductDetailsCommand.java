@@ -1,40 +1,30 @@
 package com.ecommerce.productcatalog.application.commands;
 
 import com.ecommerce.shared.common.commands.Command;
-
-import java.math.BigDecimal;
 import java.util.UUID;
 
 /**
- * Command to update an existing product.
+ * Command to update product details (name and description).
  */
-public class UpdateProductCommand implements Command<UpdateProductResult> {
+public class UpdateProductDetailsCommand implements Command<Void> {
 
     private final String commandId;
     private final String productId;
     private final String name;
     private final String description;
-    private final BigDecimal price;
-    private final String currency;
 
-    public UpdateProductCommand(String productId, String name, String description,
-            BigDecimal price, String currency) {
+    public UpdateProductDetailsCommand(String productId, String name, String description) {
         this.commandId = UUID.randomUUID().toString();
         this.productId = productId;
         this.name = name;
         this.description = description;
-        this.price = price;
-        this.currency = currency;
     }
 
-    public UpdateProductCommand(String commandId, String productId, String name,
-            String description, BigDecimal price, String currency) {
+    public UpdateProductDetailsCommand(String commandId, String productId, String name, String description) {
         this.commandId = commandId;
         this.productId = productId;
         this.name = name;
         this.description = description;
-        this.price = price;
-        this.currency = currency;
     }
 
     @Override
@@ -52,13 +42,5 @@ public class UpdateProductCommand implements Command<UpdateProductResult> {
 
     public String getDescription() {
         return description;
-    }
-
-    public BigDecimal getPrice() {
-        return price;
-    }
-
-    public String getCurrency() {
-        return currency;
     }
 }

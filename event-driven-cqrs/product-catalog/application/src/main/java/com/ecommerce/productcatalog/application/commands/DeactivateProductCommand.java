@@ -1,23 +1,22 @@
 package com.ecommerce.productcatalog.application.commands;
 
 import com.ecommerce.shared.common.commands.Command;
-
 import java.util.UUID;
 
 /**
- * Command to activate a product (make available for sale).
+ * Command to deactivate a product.
  */
-public class ActivateProductCommand implements Command<Void> {
+public class DeactivateProductCommand implements Command<Void> {
 
     private final String commandId;
     private final String productId;
 
-    public ActivateProductCommand(String productId) {
+    public DeactivateProductCommand(String productId) {
         this.commandId = UUID.randomUUID().toString();
         this.productId = productId;
     }
 
-    public ActivateProductCommand(String commandId, String productId) {
+    public DeactivateProductCommand(String commandId, String productId) {
         this.commandId = commandId;
         this.productId = productId;
     }

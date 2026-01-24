@@ -59,7 +59,8 @@ public class ProductEventConsumer {
 
             switch (eventType) {
                 case "ProductCreated" -> handleProductCreated(payload);
-                case "ProductUpdated" -> handleProductUpdated(payload);
+                case "ProductDetailsUpdated" -> handleProductDetailsUpdated(payload);
+                case "ProductPriceChanged" -> handleProductPriceChanged(payload);
                 case "ProductActivated" -> handleProductActivated(payload);
                 case "ProductDeactivated" -> handleProductDeactivated(payload);
                 case "ProductDeleted" -> handleProductDeleted(payload);
@@ -92,19 +93,31 @@ public class ProductEventConsumer {
         logger.debug("Created projection for product: {}", view.getId());
     }
 
-    private void handleProductUpdated(JsonNode payload) {
+    private void handleProductDetailsUpdated(JsonNode payload) {
         String productId = payload.get("aggregateId").asText();
         ProductCatalogView view = mongoTemplate.findById(productId, ProductCatalogView.class);
 
         if (view != null) {
             view.setName(payload.get("name").asText());
             view.setDescription(payload.has("description") ? payload.get("description").asText() : null);
-            view.setPrice(new BigDecimal(payload.get("price").asText()));
+            view.setUpdatedAt(Instant.now());
+
+            mongoTemplate.save(view);
+            logger.debug("Updated details projection for product: {}", productId);
+        }
+    }
+
+    private void handleProductPriceChanged(JsonNode payload) {
+        String productId = payload.get("aggregateId").asText();
+        ProductCatalogView view = mongoTemplate.findById(productId, ProductCatalogView.class);
+
+        if (view != null) {
+            view.setPrice(new BigDecimal(payload.get("newPrice").asText()));
             view.setCurrency(payload.get("currency").asText());
             view.setUpdatedAt(Instant.now());
 
             mongoTemplate.save(view);
-            logger.debug("Updated projection for product: {}", productId);
+            logger.debug("Updated price projection for product: {}", productId);
         }
     }
 

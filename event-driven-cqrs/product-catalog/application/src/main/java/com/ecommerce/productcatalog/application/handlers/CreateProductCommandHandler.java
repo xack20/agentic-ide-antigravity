@@ -7,6 +7,8 @@ import com.ecommerce.productcatalog.domain.aggregates.Product;
 import com.ecommerce.productcatalog.domain.valueobjects.Money;
 import com.ecommerce.productcatalog.domain.valueobjects.ProductId;
 import com.ecommerce.productcatalog.domain.valueobjects.ProductName;
+import com.ecommerce.productcatalog.domain.valueobjects.ProductDescription;
+import com.ecommerce.productcatalog.domain.valueobjects.Sku;
 import com.ecommerce.shared.common.commands.CommandHandler;
 import com.ecommerce.shared.common.events.EventPublisher;
 import org.slf4j.Logger;
@@ -58,13 +60,15 @@ public class CreateProductCommandHandler implements CommandHandler<CreateProduct
             ProductId productId = ProductId.generate();
             ProductName name = ProductName.of(command.getName());
             Money price = Money.of(command.getPrice(), command.getCurrency());
+            ProductDescription desc = ProductDescription.of(command.getDescription());
+            Sku sku = Sku.of(command.getSku());
 
             Product product = Product.create(
                     productId,
                     name,
-                    command.getDescription(),
+                    desc,
                     price,
-                    command.getSku());
+                    sku);
 
             // Capture uncommitted events BEFORE save (repository reconstitutes without
             // events)

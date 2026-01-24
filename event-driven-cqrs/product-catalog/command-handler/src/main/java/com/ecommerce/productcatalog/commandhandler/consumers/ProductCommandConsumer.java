@@ -1,7 +1,7 @@
 package com.ecommerce.productcatalog.commandhandler.consumers;
 
-import com.ecommerce.productcatalog.application.commands.CreateProductCommand;
-import com.ecommerce.productcatalog.application.handlers.CreateProductCommandHandler;
+import com.ecommerce.productcatalog.application.commands.*;
+import com.ecommerce.productcatalog.application.handlers.*;
 import com.ecommerce.shared.messaging.MessagingConstants;
 import com.ecommerce.shared.persistence.ProcessedCommandDocument;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -29,13 +29,26 @@ public class ProductCommandConsumer {
     private static final String HANDLER_TYPE = "ProductCommandHandler";
 
     private final CreateProductCommandHandler createProductCommandHandler;
+    private final UpdateProductDetailsCommandHandler updateProductDetailsCommandHandler;
+    private final ChangeProductPriceCommandHandler changeProductPriceCommandHandler;
+    private final ActivateProductCommandHandler activateProductCommandHandler;
+    private final DeactivateProductCommandHandler deactivateProductCommandHandler;
     private final MongoTemplate mongoTemplate;
     private final ObjectMapper objectMapper;
 
-    public ProductCommandConsumer(CreateProductCommandHandler createProductCommandHandler,
+    public ProductCommandConsumer(
+            CreateProductCommandHandler createProductCommandHandler,
+            UpdateProductDetailsCommandHandler updateProductDetailsCommandHandler,
+            ChangeProductPriceCommandHandler changeProductPriceCommandHandler,
+            ActivateProductCommandHandler activateProductCommandHandler,
+            DeactivateProductCommandHandler deactivateProductCommandHandler,
             MongoTemplate mongoTemplate,
             ObjectMapper objectMapper) {
         this.createProductCommandHandler = createProductCommandHandler;
+        this.updateProductDetailsCommandHandler = updateProductDetailsCommandHandler;
+        this.changeProductPriceCommandHandler = changeProductPriceCommandHandler;
+        this.activateProductCommandHandler = activateProductCommandHandler;
+        this.deactivateProductCommandHandler = deactivateProductCommandHandler;
         this.mongoTemplate = mongoTemplate;
         this.objectMapper = objectMapper;
     }
@@ -57,8 +70,9 @@ public class ProductCommandConsumer {
             }
 
             String commandId = commandNode.get("commandId").asText();
+            String commandType = root.has("commandType") ? root.get("commandType").asText() : "CreateProductCommand";
 
-            logger.info("Received command: commandId={}", commandId);
+            logger.info("Received command: type={}, commandId={}", commandType, commandId);
 
             // Idempotency check
             if (isAlreadyProcessed(commandId)) {
@@ -66,30 +80,77 @@ public class ProductCommandConsumer {
                 return;
             }
 
-            // Extract CreateProductCommand fields
-            CreateProductCommand createCmd = new CreateProductCommand(
-                    commandId,
-                    commandNode.get("name").asText(),
-                    commandNode.has("description") ? commandNode.get("description").asText() : null,
-                    commandNode.get("price").decimalValue(),
-                    commandNode.get("currency").asText(),
-                    commandNode.get("sku").asText());
+            boolean success = false;
+            String result = null;
+            String parsingError = null;
 
-            logger.info("Executing CreateProductCommand: name={}, sku={}, price={}, currency={}",
-                    createCmd.getName(), createCmd.getSku(), createCmd.getPrice(), createCmd.getCurrency());
+            try {
+                if ("CreateProductCommand".equals(commandType)) {
+                    CreateProductCommand cmd = new CreateProductCommand(
+                            commandId,
+                            commandNode.get("name").asText(),
+                            commandNode.has("description") ? commandNode.get("description").asText() : null,
+                            commandNode.get("price").decimalValue(),
+                            commandNode.get("currency").asText(),
+                            commandNode.get("sku").asText());
 
-            var result = createProductCommandHandler.handle(createCmd).join();
+                    var res = createProductCommandHandler.handle(cmd).join();
+                    if (res.isSuccess()) {
+                        success = true;
+                        result = res.getProductId();
+                    } else {
+                        parsingError = res.getErrorMessage();
+                    }
+                } else if ("UpdateProductDetailsCommand".equals(commandType)) {
+                    UpdateProductDetailsCommand cmd = new UpdateProductDetailsCommand(
+                            commandId,
+                            commandNode.get("productId").asText(),
+                            commandNode.get("name").asText(),
+                            commandNode.get("description").asText());
 
-            logger.info("Handler returned result: success={}, productId={}, error={}",
-                    result.isSuccess(), result.getProductId(), result.getErrorMessage());
+                    updateProductDetailsCommandHandler.handle(cmd).join();
+                    success = true;
+                    result = "Updated";
+                } else if ("ChangeProductPriceCommand".equals(commandType)) {
+                    ChangeProductPriceCommand cmd = new ChangeProductPriceCommand(
+                            commandId,
+                            commandNode.get("productId").asText(),
+                            commandNode.get("newPrice").decimalValue(),
+                            commandNode.get("currency").asText());
 
-            if (result.isSuccess()) {
-                markAsProcessed(commandId, "CreateProductCommand", result.getProductId());
-                logger.info("Command processed successfully: commandId={}, productId={}",
-                        commandId, result.getProductId());
+                    changeProductPriceCommandHandler.handle(cmd).join();
+                    success = true;
+                    result = "PriceChanged";
+                } else if ("ActivateProductCommand".equals(commandType)) {
+                    ActivateProductCommand cmd = new ActivateProductCommand(
+                            commandId,
+                            commandNode.get("productId").asText());
+
+                    activateProductCommandHandler.handle(cmd).join();
+                    success = true;
+                    result = "Activated";
+                } else if ("DeactivateProductCommand".equals(commandType)) {
+                    DeactivateProductCommand cmd = new DeactivateProductCommand(
+                            commandId,
+                            commandNode.get("productId").asText());
+
+                    deactivateProductCommandHandler.handle(cmd).join();
+                    success = true;
+                    result = "Deactivated";
+                } else {
+                    logger.error("Unknown command type: {}", commandType);
+                    return;
+                }
+            } catch (Exception e) {
+                logger.error("Handler execution failed for commandId={}: {}", commandId, e.getMessage(), e);
+                parsingError = e.getMessage();
+            }
+
+            if (success) {
+                markAsProcessed(commandId, commandType, result);
+                logger.info("Command processed successfully: commandId={}, type={}", commandId, commandType);
             } else {
-                logger.warn("Command failed: commandId={}, error={}",
-                        commandId, result.getErrorMessage());
+                logger.warn("Command failed: commandId={}, error={}", commandId, parsingError);
             }
         } catch (Exception ex) {
             logger.error("Error processing command: {}", ex.getMessage(), ex);
