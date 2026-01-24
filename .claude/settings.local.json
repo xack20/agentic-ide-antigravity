@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(./gradlew build)",
+      "Bash(./gradlew.bat build)",
+      "Bash(./gradlew build --no-daemon)",
+      "Bash(java -version)",
+      "Bash(./gradlew --version)",
+      "Bash(./gradlew.bat --version)"
+    ]
+  }
+}
