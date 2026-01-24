@@ -58,4 +58,9 @@ public class DeductStockForOrderCommandHandler implements CommandHandler<DeductS
 
         return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
     }
+
+    @Override
+    public Class<DeductStockForOrderCommand> getCommandType() {
+        return DeductStockForOrderCommand.class;
+    }
 }

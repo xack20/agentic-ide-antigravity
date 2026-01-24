@@ -10,8 +10,11 @@ import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 /**
  * MongoDB implementation of ProductRepository.
@@ -29,10 +32,15 @@ public class ProductRepositoryImpl implements ProductRepository {
 
     @Override
     public CompletableFuture<Optional<Product>> findById(ProductId id) {
-        return CompletableFuture.supplyAsync(() -> {
-            Optional<ProductDocument> doc = mongoRepository.findById(id.getValue());
-            return doc.map(this::toAggregate);
-        });
+        return CompletableFuture.supplyAsync(() -> mongoRepository.findById(id.getValue()).map(this::toAggregate));
+    }
+
+    @Override
+    public CompletableFuture<List<Product>> findByIds(List<String> ids) {
+        return CompletableFuture
+                .supplyAsync(() -> StreamSupport.stream(mongoRepository.findAllById(ids).spliterator(), false)
+                        .map(this::toAggregate)
+                        .collect(Collectors.toList()));
     }
 
     @Override

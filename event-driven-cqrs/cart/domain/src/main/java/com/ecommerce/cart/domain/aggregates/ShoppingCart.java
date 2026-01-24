@@ -75,11 +75,10 @@ public class ShoppingCart extends AggregateRoot<CartId> {
         }
     }
 
-    public void clear() {
-        if (!items.isEmpty()) {
-            items.clear();
-            raiseEvent(new CartCleared(id.getValue()));
-        }
+    public void clearCart(String orderId) {
+        this.items.clear();
+        this.version++;
+        raiseEvent(new CartCleared(this.id.getValue(), orderId));
     }
 
     @Override

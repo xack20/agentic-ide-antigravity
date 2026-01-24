@@ -95,9 +95,61 @@ services:
     networks:
       - ecommerce-network
 
+  # Checkout Command API
+  checkout-command-api:
+    build:
+      context: .
+      dockerfile: checkout/command-api/Dockerfile
+    container_name: checkout-command-api
+    ports:
+      - "8085:8085"
+    environment:
+      RABBITMQ_HOST: rabbitmq
+      MONGODB_URI: mongodb://mongodb:27017/checkout
+    depends_on:
+      - rabbitmq
+      - mongodb
+    networks:
+      - ecommerce-network
+
+  # Checkout CommandHandler (Thin bridge for MVP)
+  checkout-command-handler:
+    build:
+      context: .
+      dockerfile: checkout/command-handler/Dockerfile
+    container_name: checkout-command-handler
+    ports:
+      - "8086:8086"
+    environment:
+      RABBITMQ_HOST: rabbitmq
+      MONGODB_URI: mongodb://mongodb:27017/checkout
+    depends_on:
+      - rabbitmq
+      - mongodb
+    networks:
+      - ecommerce-network
+
+  # Checkout Saga Handler (The Orchestrator)
+  checkout-saga-handler:
+    build:
+      context: .
+      dockerfile: checkout-saga/handler/Dockerfile
+    container_name: checkout-saga-handler
+    ports:
+      - "8087:8087"
+    environment:
+      RABBITMQ_HOST: rabbitmq
+      MONGODB_URI: mongodb://mongodb:27017/checkout-saga
+    depends_on:
+      - rabbitmq
+      - mongodb
+    networks:
+      - ecommerce-network
+
 volumes:
   mongodb_data:
   rabbitmq_data:
+
 
 networks:
   ecommerce-network:

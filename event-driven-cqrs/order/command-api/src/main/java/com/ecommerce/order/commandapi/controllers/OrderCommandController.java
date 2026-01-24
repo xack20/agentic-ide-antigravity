@@ -1,12 +1,6 @@
 package com.ecommerce.order.commandapi.controllers;
 
-import com.ecommerce.order.application.commands.PlaceOrderCommand;
-import com.ecommerce.order.commandapi.dto.PlaceOrderRequest;
-import com.ecommerce.order.domain.valueobjects.CustomerInfo;
-import com.ecommerce.order.domain.valueobjects.ShippingAddress;
-import com.ecommerce.shared.messaging.MessagingConstants;
-import com.ecommerce.shared.messaging.commands.CommandEnvelope;
-import com.ecommerce.shared.messaging.commands.CommandPublisher;
+import com.ecommerce.shared.messaging.CommandPublisher;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -19,37 +13,13 @@ import java.util.UUID;
 @RequestMapping("/api/v1/orders")
 public class OrderCommandController {
 
-    private final CommandPublisher commandPublisher;
+        private final CommandPublisher commandPublisher;
 
-    public OrderCommandController(CommandPublisher commandPublisher) {
-        this.commandPublisher = commandPublisher;
-    }
+        public OrderCommandController(CommandPublisher commandPublisher) {
+                this.commandPublisher = commandPublisher;
+        }
 
-    @PostMapping
-    public ResponseEntity<CommandEnvelope<PlaceOrderCommand>> placeOrder(@RequestBody PlaceOrderRequest request) {
-        PlaceOrderCommand command = new PlaceOrderCommand(
-                UUID.randomUUID().toString(),
-                request.guestToken(),
-                new CustomerInfo(
-                        request.customer().name(),
-                        request.customer().phone(),
-                        request.customer().email()),
-                new ShippingAddress(
-                        request.address().line1(),
-                        request.address().city(),
-                        request.address().postalCode(),
-                        request.address().country()),
-                request.idempotencyKey());
-
-        CommandEnvelope<PlaceOrderCommand> envelope = new CommandEnvelope.Builder<>(command)
-                .correlationId(UUID.randomUUID().toString())
-                .build();
-
-        commandPublisher.publish(
-                MessagingConstants.COMMANDS_EXCHANGE,
-                MessagingConstants.ORDER_COMMANDS_QUEUE,
-                envelope);
-
-        return ResponseEntity.accepted().body(envelope);
-    }
+        // Order Management endpoints (e.g., manual corrections, staff updates) could go
+        // here
+        // Checkout flow now starts at /api/v1/checkout
 }

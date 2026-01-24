@@ -63,12 +63,7 @@ public class Order extends AggregateRoot<OrderId> {
                 items,
                 totals));
 
-        // Side effects for other contexts
-        Map<String, Integer> stockItems = new HashMap<>();
-        items.forEach(item -> stockItems.put(item.getProductId(), item.getQuantity()));
-
-        order.raiseEvent(new OrderStockCommitRequested(id.getValue(), stockItems));
-        order.raiseEvent(new OrderCartClearRequested(id.getValue(), guestToken));
+        // Side effects for other contexts are now managed by the Checkout Saga
 
         return order;
     }
@@ -147,6 +142,19 @@ public class Order extends AggregateRoot<OrderId> {
 
     public boolean isNew() {
         return isNew;
+    }
+
+    public void submit() {
+        if (!"Created".equals(this.orderStatus)) {
+            throw new IllegalStateException("Order in status " + this.orderStatus + " cannot be submitted");
+        }
+        this.orderStatus = "Placed";
+        // raiseEvent(new OrderSubmitted(id.getValue())); // Could add event later
+    }
+
+    public void cancel(String reason) {
+        this.orderStatus = "Cancelled";
+        // raiseEvent(new OrderCancelled(id.getValue(), reason));
     }
 
     @Override

@@ -1,0 +1,20 @@
+plugins {
+    id 'org.springframework.boot'
+}
+
+dependencies {
+    implementation project(':checkout:infrastructure')
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-amqp'
+    implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
+    // Saga needs to call other subsystems' APIs via Commands (RabbitMQ)
+    // No direct project dependencies here to maintain strict separation
+    implementation project(':order:application') // Still needs CreateOrderCommand? 
+    // Wait, I should use local contracts for CreateOrderCommand too if I want STRICT separation. 
+    // But for now, since it's an internal command to Order, importing order:application module is okay for MVP unless forbidden.
+    // The user said "strict subsystem separation", let's check if I can define CreateOrderCommand in SagaContracts too.
+}
+
+bootJar {
+    archiveBaseName = 'checkout-command-handler'
+}

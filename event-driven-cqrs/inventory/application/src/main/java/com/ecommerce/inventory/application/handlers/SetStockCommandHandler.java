@@ -52,4 +52,9 @@ public class SetStockCommandHandler implements CommandHandler<SetStockCommand, V
                     saved.clearUncommittedEvents();
                 });
     }
+
+    @Override
+    public Class<SetStockCommand> getCommandType() {
+        return SetStockCommand.class;
+    }
 }

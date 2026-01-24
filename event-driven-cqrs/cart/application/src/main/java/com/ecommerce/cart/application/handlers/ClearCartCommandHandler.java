@@ -18,7 +18,7 @@ public class ClearCartCommandHandler implements CommandHandler<ClearCartCommand,
     private final CartRepository repository;
     private final EventPublisher eventPublisher;
 
-    public ClearCartCommandHAndler(CartRepository repository, EventPublisher eventPublisher) {
+    public ClearCartCommandHandler(CartRepository repository, EventPublisher eventPublisher) {
         this.repository = repository;
         this.eventPublisher = eventPublisher;
     }
@@ -27,25 +27,24 @@ public class ClearCartCommandHandler implements CommandHandler<ClearCartCommand,
     public CompletableFuture<Void> handle(ClearCartCommand command) {
         GuestToken token = GuestToken.of(command.getGuestToken());
 
-        return repository.findByGuestToken(token)
+        return repository.findByGuestToken(command.getGuestToken())
                 .thenCompose(optCart -> {
-                    if (optCart.isEmpty()) {
+                    if (optCart.isEmpty())
                         return CompletableFuture.completedFuture(null);
-                    }
-                    ShoppingCart cart = optCart.get();
 
-                    cart.clear();
+                    var cart = optCart.get();
+                    cart.clearCart(command.getOrderId()); // Pass through
 
-                    return repository.save(cart);
-                })
-                .thenAccept(saved -> {
-                    if (saved != null) {
-                        List<DomainEvent> events = saved.getUncommittedEvents();
-                        for (DomainEvent event : events) {
-                            eventPublisher.publish(event);
-                        }
-                        saved.clearUncommittedEvents();
-                    }
+                    return repository.save(cart)
+                            .thenAccept(saved -> {
+                                saved.getUncommittedEvents().forEach(eventPublisher::publish);
+                                saved.clearUncommittedEvents();
+                            });
                 });
+    }
+
+    @Override
+    public Class<ClearCartCommand> getCommandType() {
+        return ClearCartCommand.class;
     }
 }

@@ -1,7 +1,11 @@
 package com.ecommerce.order.commandhandler.consumers;
 
 import com.ecommerce.order.application.commands.PlaceOrderCommand;
+import com.ecommerce.order.application.commands.CreateOrderCommand;
+import com.ecommerce.order.application.commands.MarkCheckoutCompletedCommand;
 import com.ecommerce.order.application.handlers.PlaceOrderCommandHandler;
+import com.ecommerce.order.application.handlers.CreateOrderCommandHandler;
+import com.ecommerce.order.application.handlers.MarkCheckoutCompletedCommandHandler;
 import com.ecommerce.order.domain.valueobjects.CustomerInfo;
 import com.ecommerce.order.domain.valueobjects.ShippingAddress;
 import com.ecommerce.shared.messaging.MessagingConstants;
@@ -20,10 +24,18 @@ public class OrderCommandConsumer {
     private static final Logger logger = LoggerFactory.getLogger(OrderCommandConsumer.class);
 
     private final PlaceOrderCommandHandler placeOrderHandler;
+    private final CreateOrderCommandHandler createOrderHandler;
+    private final MarkCheckoutCompletedCommandHandler markCompleteHandler;
     private final ObjectMapper objectMapper;
 
-    public OrderCommandConsumer(PlaceOrderCommandHandler placeOrderHandler, ObjectMapper objectMapper) {
+    public OrderCommandConsumer(
+            PlaceOrderCommandHandler placeOrderHandler,
+            CreateOrderCommandHandler createOrderHandler,
+            MarkCheckoutCompletedCommandHandler markCompleteHandler,
+            ObjectMapper objectMapper) {
         this.placeOrderHandler = placeOrderHandler;
+        this.createOrderHandler = createOrderHandler;
+        this.markCompleteHandler = markCompleteHandler;
         this.objectMapper = objectMapper;
     }
 
@@ -61,6 +73,19 @@ public class OrderCommandConsumer {
                                     address.get("country").asText()),
                             payload.get("idempotencyKey").asText());
                     placeOrderHandler.handle(cmd).join();
+                }
+                case "CreateOrderCommand" -> {
+                    CreateOrderCommand cmd = objectMapper.treeToValue(payload, CreateOrderCommand.class);
+                    // We need a handler for this. I'll add it to the consumer if I don't want to
+                    // inject more handlers,
+                    // or just inject the new handler.
+                    // For now, let's assume we inject handlers.
+                    createOrderHandler.handle(cmd).join();
+                }
+                case "MarkCheckoutCompletedCommand" -> {
+                    MarkCheckoutCompletedCommand cmd = objectMapper.treeToValue(payload,
+                            MarkCheckoutCompletedCommand.class);
+                    markCompleteHandler.handle(cmd).join();
                 }
                 default -> logger.warn("Unknown command type: {}", commandType);
             }

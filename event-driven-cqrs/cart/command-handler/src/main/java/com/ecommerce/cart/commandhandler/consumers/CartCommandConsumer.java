@@ -1,6 +1,10 @@
 package com.ecommerce.cart.commandhandler.consumers;
 
-import com.ecommerce.cart.application.commands.*;
+import com.ecommerce.cart.application.commands.AddCartItemCommand;
+import com.ecommerce.cart.application.commands.ClearCartCommand;
+import com.ecommerce.cart.application.commands.GetCartSnapshotCommand;
+import com.ecommerce.cart.application.commands.RemoveCartItemCommand;
+import com.ecommerce.cart.application.commands.UpdateCartItemQtyCommand;
 import com.ecommerce.cart.application.handlers.*;
 import com.ecommerce.shared.messaging.MessagingConstants;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -20,19 +24,22 @@ public class CartCommandConsumer {
     private final AddCartItemCommandHandler addHandler;
     private final UpdateCartItemQtyCommandHandler updateHandler;
     private final RemoveCartItemCommandHandler removeHandler;
-    private final ClearCartCommandHAndler clearHandler;
+    private final ClearCartCommandHandler clearCartHandler;
+    private final GetCartSnapshotCommandHandler getSnapshotHandler;
     private final ObjectMapper objectMapper;
 
     public CartCommandConsumer(
             AddCartItemCommandHandler addHandler,
             UpdateCartItemQtyCommandHandler updateHandler,
             RemoveCartItemCommandHandler removeHandler,
-            ClearCartCommandHAndler clearHandler,
+            ClearCartCommandHandler clearCartHandler,
+            GetCartSnapshotCommandHandler getSnapshotHandler,
             ObjectMapper objectMapper) {
         this.addHandler = addHandler;
         this.updateHandler = updateHandler;
         this.removeHandler = removeHandler;
-        this.clearHandler = clearHandler;
+        this.clearCartHandler = clearCartHandler;
+        this.getSnapshotHandler = getSnapshotHandler;
         this.objectMapper = objectMapper;
     }
 
@@ -52,35 +59,16 @@ public class CartCommandConsumer {
             JsonNode payload = root.get("command");
 
             switch (commandType) {
-                case "AddCartItemCommand" -> {
-                    AddCartItemCommand cmd = new AddCartItemCommand(
-                            commandId,
-                            payload.get("guestToken").asText(),
-                            payload.get("productId").asText(),
-                            payload.get("qty").asInt());
-                    addHandler.handle(cmd).join();
-                }
-                case "UpdateCartItemQtyCommand" -> {
-                    UpdateCartItemQtyCommand cmd = new UpdateCartItemQtyCommand(
-                            commandId,
-                            payload.get("guestToken").asText(),
-                            payload.get("productId").asText(),
-                            payload.get("qty").asInt());
-                    updateHandler.handle(cmd).join();
-                }
-                case "RemoveCartItemCommand" -> {
-                    RemoveCartItemCommand cmd = new RemoveCartItemCommand(
-                            commandId,
-                            payload.get("guestToken").asText(),
-                            payload.get("productId").asText());
-                    removeHandler.handle(cmd).join();
-                }
-                case "ClearCartCommand" -> {
-                    ClearCartCommand cmd = new ClearCartCommand(
-                            commandId,
-                            payload.get("guestToken").asText());
-                    clearHandler.handle(cmd).join();
-                }
+                case "AddCartItemCommand" ->
+                    addHandler.handle(objectMapper.treeToValue(payload, AddCartItemCommand.class)).join();
+                case "UpdateCartItemQtyCommand" ->
+                    updateHandler.handle(objectMapper.treeToValue(payload, UpdateCartItemQtyCommand.class)).join();
+                case "RemoveCartItemCommand" ->
+                    removeHandler.handle(objectMapper.treeToValue(payload, RemoveCartItemCommand.class)).join();
+                case "ClearCartCommand" ->
+                    clearCartHandler.handle(objectMapper.treeToValue(payload, ClearCartCommand.class)).join();
+                case "GetCartSnapshotCommand" ->
+                    getSnapshotHandler.handle(objectMapper.treeToValue(payload, GetCartSnapshotCommand.class)).join();
                 default -> logger.warn("Unknown command type: {}", commandType);
             }
 

@@ -2,8 +2,10 @@ package com.ecommerce.inventory.commandhandler.consumers;
 
 import com.ecommerce.inventory.application.commands.DeductStockForOrderCommand;
 import com.ecommerce.inventory.application.commands.SetStockCommand;
+import com.ecommerce.inventory.application.commands.ValidateStockBatchCommand;
 import com.ecommerce.inventory.application.handlers.DeductStockForOrderCommandHandler;
 import com.ecommerce.inventory.application.handlers.SetStockCommandHandler;
+import com.ecommerce.inventory.application.handlers.ValidateStockBatchCommandHandler;
 import com.ecommerce.shared.messaging.MessagingConstants;
 import com.ecommerce.shared.messaging.commands.CommandEnvelope;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -35,11 +37,13 @@ public class InventoryCommandConsumer {
     // Assuming "inventory-commands-queue".
 
     public InventoryCommandConsumer(
-            SetStockCommandHandler setStockCommandHandler,
-            DeductStockForOrderCommandHandler deductStockForOrderCommandHandler,
+            SetStockCommandHandler setHandler,
+            DeductStockForOrderCommandHandler deductHandler,
+            ValidateStockBatchCommandHandler validateHandler,
             ObjectMapper objectMapper) {
-        this.setStockCommandHandler = setStockCommandHandler;
-        this.deductStockForOrderCommandHandler = deductStockForOrderCommandHandler;
+        this.setHandler = setHandler;
+        this.deductHandler = deductHandler;
+        this.validateHandler = validateHandler;
         this.objectMapper = objectMapper;
     }
 

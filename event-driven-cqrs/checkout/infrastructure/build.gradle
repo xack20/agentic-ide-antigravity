@@ -1,0 +1,5 @@
+dependencies {
+    implementation project(':checkout:application')
+    implementation project(':shared:messaging')
+    implementation project(':shared:persistence')
+}

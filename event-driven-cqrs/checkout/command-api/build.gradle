@@ -1,0 +1,14 @@
+plugins {
+    id 'org.springframework.boot'
+}
+
+dependencies {
+    implementation project(':checkout:infrastructure')
+    implementation project(':shared:common')
+    implementation project(':shared:messaging')
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+}
+
+bootJar {
+    archiveBaseName = 'checkout-command-api'
+}

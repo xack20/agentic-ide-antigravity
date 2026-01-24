@@ -40,3 +40,15 @@ include 'order:command-api'
 include 'order:command-handler'
 include 'order:event-handler'
 include 'order:query-api'
+
+// Checkout Subsystem
+include 'checkout:domain'
+include 'checkout:application'
+include 'checkout:infrastructure'
+include 'checkout:command-api'
+include 'checkout:command-handler'
+
+// Checkout Saga Subsystem
+include 'checkout-saga:handler'
+
+

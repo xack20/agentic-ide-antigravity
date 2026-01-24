@@ -8,11 +8,13 @@ import java.util.UUID;
 public class CartCleared implements DomainEvent {
     private final UUID eventId;
     private final String cartId;
+    private final String orderId;
     private final Instant occurredAt;
 
-    public CartCleared(String cartId) {
+    public CartCleared(String cartId, String orderId) {
         this.eventId = UUID.randomUUID();
         this.cartId = cartId;
+        this.orderId = orderId;
         this.occurredAt = Instant.now();
     }
 
@@ -43,5 +45,9 @@ public class CartCleared implements DomainEvent {
 
     public String getCartId() {
         return cartId;
+    }
+
+    public String getOrderId() {
+        return orderId;
     }
 }
