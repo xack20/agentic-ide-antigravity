@@ -1,0 +1,18 @@
+plugins {
+    id 'org.springframework.boot'
+}
+
+dependencies {
+    implementation project(':order:domain')
+    implementation project(':shared:common')
+    // Needed for logic/facade
+    implementation 'org.springframework.boot:spring-boot-starter'
+}
+
+bootJar {
+    enabled = false
+}
+
+jar {
+    enabled = true
+}

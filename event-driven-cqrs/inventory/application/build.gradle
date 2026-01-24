@@ -1,0 +1,17 @@
+plugins {
+    id 'org.springframework.boot'
+}
+
+dependencies {
+    implementation project(':inventory:domain')
+    implementation project(':shared:common')
+    implementation 'org.springframework.boot:spring-boot-starter'
+}
+
+bootJar {
+    enabled = false
+}
+
+jar {
+    enabled = true
+}

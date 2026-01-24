@@ -1,0 +1,38 @@
+> Task :shared:common:compileJava UP-TO-DATE
+> Task :shared:common:processResources NO-SOURCE
+> Task :shared:common:classes UP-TO-DATE
+> Task :shared:common:jar UP-TO-DATE
+
+> Task :inventory:domain:compileJava FAILED
+C:\Users\zakaria.hossain\Desktop\Personal\agentic-ide-antigravity\event-driven-cqrs\inventory\domain\src\main\java\com\ecommerce\inventory\domain\events\StockDeductedForOrder.java:7: error: StockDeductedForOrder is not abstract and does not override abstract method getAggregateType() in DomainEvent
+public class StockDeductedForOrder implements DomainEvent {
+       ^
+C:\Users\zakaria.hossain\Desktop\Personal\agentic-ide-antigravity\event-driven-cqrs\inventory\domain\src\main\java\com\ecommerce\inventory\domain\events\StockDeductedForOrder.java:34: error: method does not override or implement a method from a supertype
+    @Override
+    ^
+C:\Users\zakaria.hossain\Desktop\Personal\agentic-ide-antigravity\event-driven-cqrs\inventory\domain\src\main\java\com\ecommerce\inventory\domain\events\StockDeductionRejected.java:7: error: StockDeductionRejected is not abstract and does not override abstract method getAggregateType() in DomainEvent
+public class StockDeductionRejected implements DomainEvent {
+       ^
+C:\Users\zakaria.hossain\Desktop\Personal\agentic-ide-antigravity\event-driven-cqrs\inventory\domain\src\main\java\com\ecommerce\inventory\domain\events\StockDeductionRejected.java:34: error: method does not override or implement a method from a supertype
+    @Override
+    ^
+C:\Users\zakaria.hossain\Desktop\Personal\agentic-ide-antigravity\event-driven-cqrs\inventory\domain\src\main\java\com\ecommerce\inventory\domain\events\StockSet.java:7: error: StockSet is not abstract and does not override abstract method getAggregateType() in DomainEvent
+public class StockSet implements DomainEvent {
+       ^
+C:\Users\zakaria.hossain\Desktop\Personal\agentic-ide-antigravity\event-driven-cqrs\inventory\domain\src\main\java\com\ecommerce\inventory\domain\events\StockSet.java:32: error: method does not override or implement a method from a supertype
+    @Override
+    ^
+6 errors
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':inventory:domain:compileJava'.
+> Compilation failed; see the compiler error output for details.
+
+* Try:
+> Run with --info option to get more log output.
+> Run with --scan to get full insights.
+
+BUILD FAILED in 2s
+3 actionable tasks: 1 executed, 2 up-to-date

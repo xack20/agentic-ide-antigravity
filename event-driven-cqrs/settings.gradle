@@ -13,3 +13,30 @@ include 'product-catalog:command-api'
 include 'product-catalog:command-handler'
 include 'product-catalog:event-handler'
 include 'product-catalog:query-api'
+
+// Inventory Subsystem
+include 'inventory:domain'
+include 'inventory:application'
+include 'inventory:infrastructure'
+include 'inventory:command-api'
+include 'inventory:command-handler'
+include 'inventory:event-handler'
+include 'inventory:query-api'
+
+// Cart Subsystem
+include 'cart:domain'
+include 'cart:application'
+include 'cart:infrastructure'
+include 'cart:command-api'
+include 'cart:command-handler'
+include 'cart:event-handler'
+include 'cart:query-api'
+
+// Order Subsystem
+include 'order:domain'
+include 'order:application'
+include 'order:infrastructure'
+include 'order:command-api'
+include 'order:command-handler'
+include 'order:event-handler'
+include 'order:query-api'

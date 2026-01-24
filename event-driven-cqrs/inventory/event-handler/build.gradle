@@ -1,0 +1,33 @@
+plugins {
+    id 'org.springframework.boot'
+}
+
+dependencies {
+    implementation project(':shared:messaging')
+    implementation project(':shared:persistence')
+    implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
+    implementation 'org.springframework.boot:spring-boot-starter-amqp'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    
+    // Need Inventory Infrastructure? The consumer handles inventory events?
+    // InventoryEventConsumer uses StockAvailabilityRepository (Query Side models).
+    // The previous implementation put EventConsumer in `event-handler` module.
+    // It depends on `query-api` models? Or dupes them?
+    // In step 1021 I wrote StockAvailabilityRepository in `query-api`.
+    // And Consumer in `event-handler`.
+    // Does `event-handler` depend on `query-api` module? 
+    // In step 929 (original build.gradle creation) I did NOT include `project(':inventory:query-api')`.
+    // I missed dependency on the Repositories!
+    
+    // I need to depend on `query-api` OR move Repositories/Models to `infrastructure`.
+    // Usually Query Side projections are in `infrastructure` or shared.
+    // Given the structure, I should add `implementation project(':inventory:query-api')` 
+    // BUT `query-api` likely depends on `spring-boot-starter-web`.
+    // Circular dependency? No. event-handler -> query-api.
+    
+    implementation project(':inventory:query-api')
+}
+
+bootJar {
+    archiveBaseName = 'inventory-event-handler'
+}

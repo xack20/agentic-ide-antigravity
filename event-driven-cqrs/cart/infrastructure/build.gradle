@@ -1,0 +1,7 @@
+dependencies {
+    implementation project(':cart:application')
+    implementation project(':shared:persistence')
+    implementation project(':shared:messaging')
+    implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
+    implementation 'org.springframework.boot:spring-boot-starter-amqp'
+}

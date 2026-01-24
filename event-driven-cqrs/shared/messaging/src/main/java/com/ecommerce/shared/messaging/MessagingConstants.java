@@ -34,5 +34,7 @@ public final class MessagingConstants {
     // Event handler queues (per subsystem)
     public static final String PRODUCT_CATALOG_EVENTS_QUEUE = "product-catalog.events";
     public static final String INVENTORY_EVENTS_QUEUE = "inventory.events";
+    public static final String CART_EVENTS_QUEUE = "cart.events";
+    public static final String ORDER_EVENTS_QUEUE = "order-management.events";
     public static final String SAGA_EVENTS_QUEUE = "saga.events";
 }

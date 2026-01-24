@@ -1,0 +1,25 @@
+> Task :shared:messaging:processResources NO-SOURCE
+> Task :cart:infrastructure:processResources NO-SOURCE
+> Task :cart:application:processResources NO-SOURCE
+> Task :cart:domain:processResources NO-SOURCE
+> Task :shared:persistence:processResources NO-SOURCE
+> Task :cart:query-api:processResources UP-TO-DATE
+> Task :shared:common:compileJava UP-TO-DATE
+> Task :shared:common:processResources NO-SOURCE
+> Task :shared:common:classes UP-TO-DATE
+> Task :shared:common:jar FAILED
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':shared:common:jar'.
+> Unable to delete file 'C:\Users\zakaria.hossain\Desktop\Personal\agentic-ide-antigravity\event-driven-cqrs\shared\common\build\libs\common-1.0.0-SNAPSHOT.jar'
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+
+BUILD FAILED in 1s
+3 actionable tasks: 1 executed, 2 up-to-date
