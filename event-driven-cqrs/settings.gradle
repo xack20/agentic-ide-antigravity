@@ -1,0 +1,15 @@
+rootProject.name = 'ecommerce-cqrs'
+
+// Shared modules
+include 'shared:common'
+include 'shared:messaging'
+include 'shared:persistence'
+
+// ProductCatalog subsystem
+include 'product-catalog:domain'
+include 'product-catalog:application'
+include 'product-catalog:infrastructure'
+include 'product-catalog:command-api'
+include 'product-catalog:command-handler'
+include 'product-catalog:event-handler'
+include 'product-catalog:query-api'

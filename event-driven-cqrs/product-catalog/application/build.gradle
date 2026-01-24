@@ -1,0 +1,7 @@
+// ProductCatalog application module - use cases, commands, queries
+dependencies {
+    implementation project(':shared:common')
+    implementation project(':product-catalog:domain')
+    
+    implementation 'org.slf4j:slf4j-api:2.0.9'
+}

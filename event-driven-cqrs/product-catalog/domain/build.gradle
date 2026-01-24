@@ -1,0 +1,4 @@
+// ProductCatalog domain module - pure domain logic, no infrastructure dependencies
+dependencies {
+    implementation project(':shared:common')
+}

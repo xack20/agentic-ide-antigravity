@@ -1,0 +1,104 @@
+version: '3.8'
+
+services:
+  # MongoDB for state and read databases
+  mongodb:
+    image: mongo:7.0
+    container_name: ecommerce-mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    environment:
+      MONGO_INITDB_DATABASE: ecommerce
+    networks:
+      - ecommerce-network
+
+  # RabbitMQ for messaging
+  rabbitmq:
+    image: rabbitmq:3.12-management
+    container_name: ecommerce-rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - ecommerce-network
+
+  # ProductCatalog Command API
+  product-catalog-command-api:
+    build:
+      context: .
+      dockerfile: product-catalog/command-api/Dockerfile
+    container_name: product-catalog-command-api
+    ports:
+      - "8081:8081"
+    environment:
+      RABBITMQ_HOST: rabbitmq
+      MONGODB_URI: mongodb://mongodb:27017/product-catalog
+    depends_on:
+      - rabbitmq
+      - mongodb
+    networks:
+      - ecommerce-network
+
+  # ProductCatalog CommandHandler
+  product-catalog-command-handler:
+    build:
+      context: .
+      dockerfile: product-catalog/command-handler/Dockerfile
+    container_name: product-catalog-command-handler
+    ports:
+      - "8082:8082"
+    environment:
+      RABBITMQ_HOST: rabbitmq
+      MONGODB_URI: mongodb://mongodb:27017/product-catalog
+    depends_on:
+      - rabbitmq
+      - mongodb
+    networks:
+      - ecommerce-network
+
+  # ProductCatalog EventHandler
+  product-catalog-event-handler:
+    build:
+      context: .
+      dockerfile: product-catalog/event-handler/Dockerfile
+    container_name: product-catalog-event-handler
+    ports:
+      - "8083:8083"
+    environment:
+      RABBITMQ_HOST: rabbitmq
+      MONGODB_URI: mongodb://mongodb:27017/product-catalog-read
+    depends_on:
+      - rabbitmq
+      - mongodb
+    networks:
+      - ecommerce-network
+
+  # ProductCatalog Query API
+  product-catalog-query-api:
+    build:
+      context: .
+      dockerfile: product-catalog/query-api/Dockerfile
+    container_name: product-catalog-query-api
+    ports:
+      - "8084:8084"
+    environment:
+      MONGODB_URI: mongodb://mongodb:27017/product-catalog-read
+    depends_on:
+      - mongodb
+    networks:
+      - ecommerce-network
+
+volumes:
+  mongodb_data:
+  rabbitmq_data:
+
+networks:
+  ecommerce-network:
+    driver: bridge

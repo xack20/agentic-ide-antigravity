@@ -1,0 +1,14 @@
+// Shared persistence module - MongoDB infrastructure
+apply plugin: 'org.springframework.boot'
+apply plugin: 'io.spring.dependency-management'
+
+bootJar { enabled = false }
+jar { enabled = true }
+
+dependencies {
+    implementation project(':shared:common')
+    
+    implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.16.1'
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.16.1'
+}
